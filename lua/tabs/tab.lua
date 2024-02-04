@@ -29,4 +29,11 @@ function Tab:str()
     end
 end
 
+function Tab:serialize()
+    return {
+        name = self.name,
+        number = self.number,
+    }
+end
+
 return Tab
