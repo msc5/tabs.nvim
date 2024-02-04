@@ -40,7 +40,7 @@ function M.save_path()
 end
 
 function M.save()
-    local success, result = pcall(function()
+    pcall(function()
         if vim.v.this_session ~= nil then
             local serialized = {}
             for _, tab in pairs(M.tabs) do
@@ -50,14 +50,10 @@ function M.save()
             vim.fn.writefile({ json }, M.save_path())
         end
     end)
-    if not success then
-        local msg = 'Failed to save tab info\nError:\n' .. result
-        vim.notify(msg, vim.log.levels.ERROR, { title = 'Tabs' })
-    end
 end
 
 function M.load()
-    local success, result = pcall(function()
+    pcall(function()
         if vim.v.this_session ~= nil then
             local success, data = pcall(function() return vim.fn.readfile(M.save_path()) end)
             if success then
@@ -71,10 +67,6 @@ function M.load()
             end
         end
     end)
-    if not success then
-        local msg = 'Failed to load tab info\nError:\n' .. result
-        vim.notify(msg, vim.log.levels.ERROR, { title = 'Tabs' })
-    end
 end
 
 function M.tab_rename()
