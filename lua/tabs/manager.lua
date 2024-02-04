@@ -2,25 +2,28 @@ local Tab = require 'tabs.tab'
 
 local M = {
     tabs = {
-        Tab:new(),
+        Tab:new { number = 1 },
     },
-    current = {},
 }
 
+function M.get_current()
+    local handle = vim.api.nvim_get_current_tabpage()
+    local number = vim.api.nvim_tabpage_get_number(handle)
+    return handle, number
+end
+
 function M.on_tabnew()
-    local tabnr = vim.api.nvim_get_current_tabpage()
-    M.tabs[tabnr] = Tab:new()
-    M.tab_info()
+    local _, number = M.get_current()
+    M.tabs[number] = Tab:new { number = number }
 end
 
 function M.on_tabclosed()
-    local tabnr = vim.fn.expand '<afile>'
-    M.tabs[tonumber(tabnr)] = nil
-    M.tab_info()
+    local number = vim.fn.expand '<afile>'
+    M.tabs[tonumber(number)] = nil
 end
 
 function M.tab_rename()
-    local tabnr = vim.api.nvim_get_current_tabpage()
+    local _, number = M.get_current()
 
     local Input = require 'nui.input'
     local input = Input({
@@ -31,7 +34,7 @@ function M.tab_rename()
         win_options = { winhighlight = 'Normal:NormalFloat' },
     }, {
         on_submit = function(value)
-            M.tabs[tabnr].name = value
+            M.tabs[number].name = value
             vim.cmd [[ redrawtabline ]]
         end,
     })
@@ -44,7 +47,10 @@ end
 
 function M.tab_info()
     --
+    local tabline = require 'tabs.tabline'
     print(vim.inspect(M))
+    print(vim.inspect(tabline.sections))
+    print(tabline:render())
 end
 
 function M.setup()
