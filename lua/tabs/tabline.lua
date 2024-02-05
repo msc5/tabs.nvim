@@ -9,8 +9,6 @@ local M = {
 }
 
 function M:render()
-    --
-
     local sections = {}
     for _, section in pairs(M.sections) do
         local str = section:render()

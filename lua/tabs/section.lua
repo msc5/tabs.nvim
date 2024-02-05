@@ -25,6 +25,15 @@ function Section:render()
     end
 end
 
+function Section:width()
+    local success, result = pcall(function() return self.text() end)
+    if success then
+        return string.len(result)
+    else
+        return string.len(self.text)
+    end
+end
+
 -- ------------------------- Builtin Section Types -------------------------- --
 
 ---@return Section

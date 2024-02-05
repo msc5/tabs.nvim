@@ -15,18 +15,10 @@ end
 
 ---@return boolean
 function Tab:is_current()
+    -- TODO: Migrate this out of Tab class and remove `number` variable from Tab
     local handle = vim.api.nvim_get_current_tabpage()
     local number = vim.api.nvim_tabpage_get_number(handle)
     return self.number == number
-end
-
----@return string
-function Tab:str()
-    if self:is_current() then
-        return string.format('%s( %s %d )', '%#TablineCurrentTab#', self.name, self.number)
-    else
-        return string.format('%s  %s %d  ', '%#TablineTab#', self.name, self.number)
-    end
 end
 
 function Tab:serialize()
