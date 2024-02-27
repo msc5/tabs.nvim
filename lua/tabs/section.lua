@@ -1,10 +1,13 @@
 ---@class Section
+---@field text? string | function
+---@field sections? table | function
+---@field position? integer | "right" | "left"
 local Section = {
     text = '',
     highlight = '',
+    position = 0,
+    sections = {},
 }
-
-function Section.hl(text, highlight) return string.format('%%#%s#%s', highlight, text) end
 
 ---@param o Section | nil
 ---@return Section
@@ -15,73 +18,79 @@ function Section:new(o)
     return o
 end
 
----@return string
-function Section:render()
+function Section:get_text()
     local success, result = pcall(function() return self.text() end)
-    if success then
-        return Section.hl(result, self.highlight)
-    else
-        return Section.hl(self.text, self.highlight)
-    end
+    return success and result or self.text
 end
 
-function Section:width()
-    local success, result = pcall(function() return self.text() end)
-    if success then
-        return string.len(result)
-    else
-        return string.len(self.text)
-    end
+function Section:get_sections()
+    local success, result = pcall(function() return self.sections() end)
+    return success and result or nil
 end
 
 -- ------------------------- Builtin Section Types -------------------------- --
 
+---@param o Section | nil
 ---@return Section
-function Section:version()
-    return Section:new {
+function Section:version(o)
+    local opts = vim.tbl_deep_extend('force', o, {
         text = function()
             local v = vim.version()
             return string.format('Neovim v%d.%d.%d', v.major, v.minor, v.patch)
         end,
         highlight = 'TablineVersion',
-    }
+    })
+    return Section:new(opts)
 end
 
+---@param o Section | nil
 ---@return Section
-function Section:tabs()
-    return Section:new {
-        text = function()
+function Section:session(o)
+    local opts = vim.tbl_deep_extend('force', o, {
+        sections = {
+            Section:new {
+                text = '󰮄 ',
+                highlight = 'Constant',
+                position = 0,
+            },
+            Section:new {
+                text = function()
+                    return vim.v.this_session ~= '' and vim.fs.basename(vim.v.this_session) or ''
+                end,
+                highlight = 'Character',
+                position = 3,
+            },
+        },
+        highlight = 'TablineSession',
+    })
+    return Section:new(opts)
+end
+
+---@param o Section | nil
+---@return Section
+function Section:tabs(o)
+    local opts = vim.tbl_deep_extend('force', o, {
+        sections = function()
             local manager = require 'tabs.manager'
-            local str = {}
-            for _, tab in pairs(manager.tabs) do
-                local section = Section.render {
-                    text = '( ' .. tab.name .. ' ' .. tab.number .. ' )',
-                    highlight = tab:is_current() and 'TablineCurrentTab' or 'TablineTab',
-                }
-                table.insert(str, section)
+            local sections, position = {}, 0
+            for _, tab in pairs(manager.tabs()) do
+                local text = '( ' .. tab.name .. ' ' .. tab.number .. ' )'
+                local highlight = tab.is_current and 'TablineCurrentTab' or 'TablineTab'
+                table.insert(
+                    sections,
+                    Section:new {
+                        text = text,
+                        highlight = highlight,
+                        position = position,
+                    }
+                )
+                position = position + text:len() + 1
             end
-            return table.concat(str, ' ')
+            return sections
         end,
         highlight = 'TablineTab',
-    }
-end
-
-function Section:session()
-    return Section:new {
-        text = function()
-            local icon = Section.render { text = '󰮄 ', highlight = 'TablineSessionIcon' }
-            if vim.v.this_session ~= '' then
-                local session = Section.render {
-                    text = vim.fs.basename(vim.v.this_session),
-                    highlight = 'TablineSession',
-                }
-                return icon .. ' ' .. session
-            else
-                return icon
-            end
-        end,
-        highlight = 'TablineSession',
-    }
+    })
+    return Section:new(opts)
 end
 
 return Section

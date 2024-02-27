@@ -4,12 +4,6 @@ local M = {
     highlights = {},
 }
 
-function M.merge(a, b)
-    for k, v in pairs(a) do
-        b[k] = v
-    end
-end
-
 function M.setup()
     -- Create highlight groups when `ColorScheme` event fires
     vim.api.nvim_create_autocmd({ 'ColorScheme' }, {
