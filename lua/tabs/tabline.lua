@@ -1,91 +1,100 @@
 local Section = require 'tabs.section'
 local str = require 'tabs.str'
-
 local utf8 = require 'utf8'
 
-local M = {
-    sections = {
-        Section:version { position = 3 },
-        Section:session { position = 20 },
-        Section:tabs { position = 80 },
-    },
+---@class Tabline
+---@field text? string
+---@field sections? table
+---@field highlights? table
+local Tabline = {
+    text = '',
+    highlighted = '',
+    sections = {},
+    highlights = {},
 }
 
-function M.replace(original, text, position)
-    --
-    -- sub() is [start, stop] i.e., inclusive both sides
-    --
-    local sub_stop = utf8.offset(original, position - 1)
-    local sub_start = utf8.offset(original, position + text:len())
-    return original:sub(0, sub_stop) .. text .. original:sub(sub_start)
+---@param o Tabline | nil
+---@return Tabline
+function Tabline:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
-function M.insert(original, text, position)
-    local sub_stop = utf8.offset(original, position - 1)
-    local sub_start = utf8.offset(original, position)
-    return original:sub(0, sub_stop) .. text .. original:sub(sub_start)
+function Tabline:replace(text, position)
+    local sub_stop = utf8.offset(self.text, position - 1)
+    local sub_start = utf8.offset(self.text, position + text:len())
+    self.text = self.text:sub(0, sub_stop) .. text .. self.text:sub(sub_start)
 end
 
-function M.render(sections, tabline, highlights, position)
+function Tabline:insert(text, position)
+    local sub_stop = utf8.offset(self.text, position - 1)
+    local sub_start = utf8.offset(self.text, position)
+    self.text = self.text:sub(0, sub_stop) .. text .. self.text:sub(sub_start)
+end
+
+function Tabline:generate(position, verbose, sections)
     --
-    tabline = tabline or string.rep(' ', vim.o.columns)
-    highlights = highlights or {}
     position = position or 0
+    verbose = verbose or false
+    sections = sections or self.sections
 
     --
     for _, section in pairs(sections) do
+        local text = section:get_text()
         local subsections = section:get_sections()
-        if subsections then
-            tabline, highlights = M.render(subsections, tabline, highlights, section.position)
-        elseif next(section.sections) ~= nil then
-            tabline, highlights = M.render(section.sections, tabline, highlights, section.position)
-        else
-            local text = section:get_text()
-            table.insert(highlights, {
+
+        -- Render directly
+        if text then
+            table.insert(self.highlights, {
                 group = section.highlight,
                 start = position + section.position,
                 stop = position + section.position + text:len(),
             })
-            tabline = M.replace(tabline, text, position + section.position)
+            self:replace(text, position + section.position)
+
+        -- Render recursively
+        elseif subsections then
+            self:generate(section.position, verbose, subsections)
         end
     end
 
-    table.sort(highlights, function(a, b) return a.start > b.start end)
-
-    --
-    return tabline, highlights
+    table.sort(self.highlights, function(a, b) return a.start > b.start end)
 end
 
-function M.highlight(tabline, highlights)
+function Tabline:highlight()
     --
-    for _, highlight in pairs(highlights) do
+    for _, highlight in pairs(self.highlights) do
         local highlight_str = '%#' .. highlight.group .. '#'
-        -- local reset_str = '%#NormalFloat#'
-        -- tabline = M.insert(tabline, reset_str, highlight.stop)
-        tabline = M.insert(tabline, highlight_str, highlight.start)
+        self:insert('%#NormalFloat#', highlight.stop)
+        self:insert(highlight_str, highlight.start)
     end
-
-    --
-    return tabline
 end
 
--- Create global alias
-TabsRender = function()
-    local tabline, highlights = M.render(M.sections)
-    return M.highlight(tabline, highlights)
+function Tabline:render()
+    self.text = string.rep(' ', vim.o.columns)
+    self:generate()
+    self:highlight()
+    return self.text
 end
 
 vim.api.nvim_create_user_command('TabsInspect', function()
-    local tabline, highlights = M.render(M.sections)
-    local highlighted = M.highlight(tabline, highlights)
-    print('|' .. tabline .. '|')
-    print('|' .. highlighted .. '|')
-    print(vim.inspect(highlights))
+    local tabline = require('tabs').tabline
+    print(vim.inspect(tabline))
+    tabline:render(0, true)
+    print('|' .. tabline.text .. '|')
+    print('|' .. tabline.highlighted .. '|')
 end, {})
 
-function M:setup()
-    vim.api.nvim_set_option('showtabline', 2)
-    vim.api.nvim_set_option('tabline', '%!v:lua.TabsRender()')
-end
-
-return M
+return {
+    setup = function()
+        return Tabline:new {
+            sections = {
+                Section:version { position = 3 },
+                Section:session { position = 20 },
+                Section:tabs { position = 80 },
+            },
+        }
+    end,
+}

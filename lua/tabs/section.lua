@@ -25,7 +25,13 @@ end
 
 function Section:get_sections()
     local success, result = pcall(function() return self.sections() end)
-    return success and result or nil
+    if success then
+        return result
+    elseif self.sections ~= {} then
+        return self.sections
+    else
+        return nil
+    end
 end
 
 -- ------------------------- Builtin Section Types -------------------------- --
