@@ -16,6 +16,7 @@ function M.setup()
                 orange = 'Constant',
                 blue = 'Function',
                 cyan = 'Character',
+                light_blue = 'Label',
                 pink = 'Macro',
             }
             for color, highlight in pairs(fg_highlights) do
@@ -29,11 +30,12 @@ function M.setup()
                 M.bg[color] = vim.api.nvim_get_hl(0, { name = highlight }).bg
             end
             local hl = function(name, opts) vim.api.nvim_set_hl(0, name, opts) end
+            hl('TablineDefault', { fg = M.fg.grey, bg = M.bg.dark })
             hl('TablineVersion', { fg = M.fg.grey, bg = M.bg.dark })
             hl('TablineSessionIcon', { fg = M.fg.red, bg = M.bg.dark })
             hl('TablineSession', { fg = M.fg.orange, bg = M.bg.dark, bold = true })
             hl('TablineTab', { fg = M.fg.grey, bg = M.bg.dark })
-            hl('TablineCurrentTab', { fg = M.fg.pink, bg = M.bg.dark, bold = true })
+            hl('TablineCurrentTab', { fg = M.fg.blue, bg = M.bg.dark, bold = true })
         end,
     })
 end

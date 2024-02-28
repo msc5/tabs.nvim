@@ -8,7 +8,6 @@ local utf8 = require 'utf8'
 ---@field highlights? table
 local Tabline = {
     text = '',
-    highlighted = '',
     sections = {},
     highlights = {},
 }
@@ -23,12 +22,24 @@ function Tabline:new(o)
 end
 
 function Tabline:replace(text, position)
+    --
+    -- Example:
+    -- text = 'example'
+    -- replace('|', 3)
+    -- text = 'ex|mple'
+    --
     local sub_stop = utf8.offset(self.text, position - 1)
     local sub_start = utf8.offset(self.text, position + text:len())
     self.text = self.text:sub(0, sub_stop) .. text .. self.text:sub(sub_start)
 end
 
 function Tabline:insert(text, position)
+    --
+    -- Example:
+    -- text = 'example'
+    -- insert('|', 3)
+    -- text = 'ex|ample'
+    --
     local sub_stop = utf8.offset(self.text, position - 1)
     local sub_start = utf8.offset(self.text, position)
     self.text = self.text:sub(0, sub_stop) .. text .. self.text:sub(sub_start)
@@ -45,35 +56,58 @@ function Tabline:generate(position, verbose, sections)
         local text = section:get_text()
         local subsections = section:get_sections()
 
+        -- Compute render start position
+        local start = position + section.position
+
         -- Render directly
         if text then
             table.insert(self.highlights, {
                 group = section.highlight,
-                start = position + section.position,
-                stop = position + section.position + text:len(),
+                start = start,
+                stop = start + vim.fn.strdisplaywidth(text),
             })
-            self:replace(text, position + section.position)
+            self:replace(text, start)
 
         -- Render recursively
         elseif subsections then
-            self:generate(section.position, verbose, subsections)
+            self:generate(start, verbose, subsections)
         end
     end
-
-    table.sort(self.highlights, function(a, b) return a.start > b.start end)
 end
 
 function Tabline:highlight()
     --
+    local highlights = {}
+
+    --
+    table.sort(self.highlights, function(a, b) return a.start > b.start end)
     for _, highlight in pairs(self.highlights) do
-        local highlight_str = '%#' .. highlight.group .. '#'
-        self:insert('%#NormalFloat#', highlight.stop)
-        self:insert(highlight_str, highlight.start)
+        table.insert(highlights, {
+            pos = highlight.start,
+            text = '%#' .. highlight.group .. '#',
+        })
     end
+    table.sort(self.highlights, function(a, b) return a.stop > b.stop end)
+    for _, highlight in pairs(self.highlights) do
+        table.insert(highlights, {
+            pos = highlight.stop,
+            text = '%#NormalFloat#',
+        })
+    end
+
+    --
+    table.sort(highlights, function(a, b) return a.pos > b.pos end)
+    for _, highlight in pairs(highlights) do
+        self:insert(highlight.text, highlight.pos)
+    end
+
+    --
+    self.text = '%#NormalFloat#' .. self.text
 end
 
 function Tabline:render()
     self.text = string.rep(' ', vim.o.columns)
+    self.highlights = {}
     self:generate()
     self:highlight()
     return self.text
@@ -81,10 +115,11 @@ end
 
 vim.api.nvim_create_user_command('TabsInspect', function()
     local tabline = require('tabs').tabline
-    print(vim.inspect(tabline))
-    tabline:render(0, true)
+    tabline:render()
+    print(vim.o.columns)
+    print(vim.fn.strdisplaywidth(tabline.text))
     print('|' .. tabline.text .. '|')
-    print('|' .. tabline.highlighted .. '|')
+    print(vim.inspect(tabline))
 end, {})
 
 return {
@@ -93,7 +128,7 @@ return {
             sections = {
                 Section:version { position = 3 },
                 Section:session { position = 20 },
-                Section:tabs { position = 80 },
+                Section:tabs { position = 40, justify = 'right' },
             },
         }
     end,

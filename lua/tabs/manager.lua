@@ -1,13 +1,36 @@
 local M = {}
 
 function M.tabs()
-    -- Lists all tabs
     local tabs = {}
+
+    -- Get Diffview tabs
+    local diffview_tabs = {}
+    pcall(function()
+        for _, view in pairs(require('diffview.lib').views) do
+            diffview_tabs[view.tabpage] = true
+        end
+    end)
+
     for number, handle in pairs(vim.api.nvim_list_tabpages()) do
+        --
+        local name
+
+        if diffview_tabs[handle] then
+            name = 'Diffview'
+        else
+            name = 'Tab'
+        end
+
+        --
+        local windows = vim.api.nvim_tabpage_list_wins(handle)
+        local heading = '( ' .. name .. ' ' .. number .. ' )'
+
         table.insert(tabs, {
-            name = 'Tab',
+            name = name,
+            heading = heading,
             number = number,
             handle = handle,
+            windows = windows,
             is_current = handle == vim.api.nvim_get_current_tabpage(),
         })
     end

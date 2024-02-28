@@ -1,11 +1,13 @@
 ---@class Section
 ---@field text? string | function
 ---@field sections? table | function
----@field position? integer | "right" | "left"
+---@field position? integer
+---@field justify? "right" | "left"
 local Section = {
     text = '',
     highlight = '',
     position = 0,
+    justify = 'left',
     sections = {},
 }
 
@@ -20,14 +22,20 @@ end
 
 function Section:get_text()
     local success, result = pcall(function() return self.text() end)
-    return success and result or self.text
+    if success then
+        return result
+    elseif self.text:len() > 0 then
+        return self.text
+    else
+        return nil
+    end
 end
 
 function Section:get_sections()
     local success, result = pcall(function() return self.sections() end)
     if success then
         return result
-    elseif self.sections ~= {} then
+    elseif next(self.sections) ~= nil then
         return self.sections
     else
         return nil
@@ -39,64 +47,61 @@ end
 ---@param o Section | nil
 ---@return Section
 function Section:version(o)
-    local opts = vim.tbl_deep_extend('force', o, {
+    local version = Section:new {
         text = function()
             local v = vim.version()
             return string.format('Neovim v%d.%d.%d', v.major, v.minor, v.patch)
         end,
         highlight = 'TablineVersion',
-    })
-    return Section:new(opts)
+    }
+    return version:new(o)
 end
 
 ---@param o Section | nil
 ---@return Section
 function Section:session(o)
-    local opts = vim.tbl_deep_extend('force', o, {
+    local session = Section:new {
         sections = {
             Section:new {
                 text = '󰮄 ',
-                highlight = 'Constant',
+                highlight = 'TablineSessionIcon',
                 position = 0,
             },
             Section:new {
                 text = function()
                     return vim.v.this_session ~= '' and vim.fs.basename(vim.v.this_session) or ''
                 end,
-                highlight = 'Character',
+                highlight = 'TablineSession',
                 position = 3,
             },
         },
-        highlight = 'TablineSession',
-    })
-    return Section:new(opts)
+    }
+    return session:new(o)
 end
 
 ---@param o Section | nil
 ---@return Section
 function Section:tabs(o)
-    local opts = vim.tbl_deep_extend('force', o, {
+    local tabs = Section:new {
         sections = function()
             local manager = require 'tabs.manager'
             local sections, position = {}, 0
             for _, tab in pairs(manager.tabs()) do
-                local text = '( ' .. tab.name .. ' ' .. tab.number .. ' )'
                 local highlight = tab.is_current and 'TablineCurrentTab' or 'TablineTab'
                 table.insert(
                     sections,
                     Section:new {
-                        text = text,
+                        text = tab.heading,
                         highlight = highlight,
                         position = position,
                     }
                 )
-                position = position + text:len() + 1
+                position = position + tab.heading:len() + 1
             end
             return sections
         end,
-        highlight = 'TablineTab',
-    })
-    return Section:new(opts)
+    }
+    return tabs:new(o)
 end
 
 return Section
