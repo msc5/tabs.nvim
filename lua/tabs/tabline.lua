@@ -21,6 +21,8 @@ function Tabline:new(o)
     return o
 end
 
+---@param text string
+---@param position integer
 function Tabline:replace(text, position)
     --
     -- Example:
@@ -33,6 +35,8 @@ function Tabline:replace(text, position)
     self.text = self.text:sub(0, sub_stop) .. text .. self.text:sub(sub_start)
 end
 
+---@param text string
+---@param position integer
 function Tabline:insert(text, position)
     --
     -- Example:
@@ -45,11 +49,14 @@ function Tabline:insert(text, position)
     self.text = self.text:sub(0, sub_stop) .. text .. self.text:sub(sub_start)
 end
 
+---@param position? integer
+---@param verbose? boolean
+---@param sections? table
 function Tabline:generate(position, verbose, sections)
     --
     position = position or 0
     verbose = verbose or false
-    sections = sections or self.sections
+    sections = sections or self.sections or {}
 
     --
     for _, section in pairs(sections) do
