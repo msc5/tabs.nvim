@@ -1,29 +1,38 @@
 local M = {}
 
+local skip_filetypes = {
+    ['NvimTree'] = true,
+    ['neo-tree'] = true,
+    ['aerial'] = true,
+    ['help'] = true,
+    ['qf'] = true,
+}
+
 function M.tabs()
     local tabs = {}
 
-    -- Get Diffview tabs
-    local diffview_tabs = {}
-    pcall(function()
-        for _, view in pairs(require('diffview.lib').views) do
-            diffview_tabs[view.tabpage] = true
-        end
-    end)
-
     for number, handle in pairs(vim.api.nvim_list_tabpages()) do
-        --
         local name
 
-        if diffview_tabs[handle] then
-            name = 'Diffview'
-        else
-            name = 'Tab'
+        local wins = vim.api.nvim_tabpage_list_wins(handle)
+        local wins_real = {}
+
+        for _, win in ipairs(wins) do
+            local buf = vim.api.nvim_win_get_buf(win)
+            local bt = vim.api.nvim_get_option_value('buftype', { buf = buf })
+            local ft = vim.api.nvim_get_option_value('filetype', { buf = buf })
+
+            if bt == '' and not skip_filetypes[ft] then
+                local fullpath = vim.api.nvim_buf_get_name(buf)
+                local relpath = vim.fn.fnamemodify(fullpath, ':.')
+
+                if name ~= '' then name = relpath end
+                table.insert(wins_real, win)
+            end
         end
 
-        --
         local windows = vim.api.nvim_tabpage_list_wins(handle)
-        local heading = '( ' .. name .. ' ' .. number .. ' )'
+        local heading = ('  %s (%s)  '):format(name, #wins_real)
 
         table.insert(tabs, {
             name = name,
