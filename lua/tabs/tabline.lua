@@ -98,7 +98,7 @@ function Tabline:highlight()
     for _, highlight in pairs(self.highlights) do
         table.insert(highlights, {
             pos = highlight.stop,
-            text = '%#NormalFloat#',
+            text = '%#TablineDefault#',
         })
     end
 
@@ -109,7 +109,7 @@ function Tabline:highlight()
     end
 
     --
-    self.text = '%#NormalFloat#' .. self.text
+    self.text = '%#TablineDefault#' .. self.text
 end
 
 function Tabline:render()
