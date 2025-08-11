@@ -32,7 +32,7 @@ function M.tabs()
         end
 
         local windows = vim.api.nvim_tabpage_list_wins(handle)
-        local heading = ('  %s (%s)  '):format(name, #wins_real)
+        local heading = ('  %s (%s)  '):format(name ~= '' and name or 'Tab', #wins_real)
 
         table.insert(tabs, {
             name = name,
