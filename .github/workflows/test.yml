@@ -1,0 +1,29 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Lua
+        uses: leafo/gh-actions-lua@v9
+        with:
+          luaVersion: "5.1"
+
+      - name: Run tests
+        run: |
+          nvim --headless -c "lua dofile('tests/simple_test.lua')"
+
+      - name: Check for syntax errors
+        run: |
+          # Check Lua syntax for all Lua files
+          find lua -name "*.lua" -exec luac -p {} \;
+          find tests -name "*.lua" -exec luac -p {} \;
