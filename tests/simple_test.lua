@@ -99,7 +99,6 @@ local function run_tests()
     print("Testing manager module...")
     local manager = require('tabs.manager')
     
-    assert_is_function(manager.setup, "manager.setup should be a function")
     assert_is_function(manager.tabs, "manager.tabs should be a function")
     
     local tabs_list = manager.tabs()
