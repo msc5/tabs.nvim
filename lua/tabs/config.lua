@@ -17,12 +17,6 @@ local M = {
         ['help'] = true,
         ['qf'] = true,
     },
-    keymaps = {
-        next = 'L',
-        prev = 'H',
-        new = 'Tn',
-        close = 'Tc',
-    },
     colors = {
         -- Default color mappings - can be overridden
         fg_highlights = {

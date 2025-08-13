@@ -106,14 +106,6 @@ require('tabs').setup({
         ['toggleterm'] = true, -- Additional file type
     },
     
-    -- Custom keymaps
-    keymaps = {
-        next = 'L',
-        prev = 'H',
-        new = 'Tn',
-        close = 'Tc',
-    },
-    
     -- Custom color mappings
     colors = {
         fg_highlights = {
@@ -162,40 +154,13 @@ You can modify this list in `lua/tabs/manager.lua` in the `skip_filetypes` table
 
 ## Development
 
-### Project Structure
-
-```
-tabs.nvim/
-├── lua/tabs/
-│   ├── init.lua      # Main plugin entry point
-│   ├── config.lua    # Configuration system
-│   ├── utils.lua     # Utility functions and error handling
-│   ├── tabline.lua   # Tabline rendering logic
-│   ├── section.lua   # Section definitions and rendering
-│   ├── manager.lua   # Tab management and keymaps
-│   ├── colors.lua    # Color scheme handling
-│   └── str.lua       # String utility functions
-├── plugin/
-│   └── tabs.lua      # Plugin loader
-├── tests/            # Test suite
-├── examples/         # Configuration examples
-└── README.md
-```
-
 ### Debugging
 
 Use these commands to debug the tabline:
 
 ```vim
-:TabsSetup    " Manually setup the plugin
 :TabsInspect  " Show debug information about the tabline
 ```
-
-If you can't see the tabs, try:
-1. Run `:TabsSetup` to ensure the plugin is properly initialized
-2. Run `:TabsInspect` to see debug information
-3. Check that `showtabline` is set to 1: `:set showtabline?`
-4. Verify the tabline option is set: `:set tabline?`
 
 ### Testing
 

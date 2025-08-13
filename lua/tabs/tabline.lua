@@ -95,27 +95,6 @@ function Tabline:render()
     return self.text
 end
 
-vim.api.nvim_create_user_command('TabsInspect', function()
-    local tabline = require('tabs').tabline
-    if not tabline then
-        print("❌ Tabline not initialized. Run :TabsSetup first.")
-        return
-    end
-    
-    tabline:render()
-    print("📊 Tabline Debug Information:")
-    print("Columns: " .. vim.o.columns)
-    print("Text length: " .. vim.fn.strdisplaywidth(tabline.text))
-    print("Raw text: |" .. tabline.text .. "|")
-    print("Sections count: " .. #tabline.sections)
-    print("Highlights count: " .. #tabline.highlights)
-end, {})
-
-vim.api.nvim_create_user_command('TabsSetup', function()
-    require('tabs').setup()
-    print("✅ Tabs.nvim setup complete")
-end, {})
-
 return {
     setup = function()
         -- Get configuration with fallback to defaults

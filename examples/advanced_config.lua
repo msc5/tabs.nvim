@@ -23,14 +23,6 @@ return {
                 ['toggleterm'] = true, -- Additional file type
             },
             
-            -- Custom keymaps
-            keymaps = {
-                next = 'L',
-                prev = 'H',
-                new = 'Tn',
-                close = 'Tc',
-            },
-            
             -- Custom color mappings
             colors = {
                 fg_highlights = {

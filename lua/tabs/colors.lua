@@ -4,18 +4,15 @@ local M = {
     highlights = {},
 }
 
-local config = require('tabs.config')
-local utils = require('tabs.utils')
+local config = require 'tabs.config'
 
 ---Get highlight color with fallback
 ---@param highlight_name string Highlight group name
 ---@param fallback_color string Fallback color if highlight not found
 ---@return string
-local function get_highlight_color(highlight_name, fallback_color)
+local function get_highlight_color(highlight_name, fallback_color, use_bg)
     local success, hl = pcall(vim.api.nvim_get_hl, 0, { name = highlight_name })
-    if success and hl and hl.fg then
-        return string.format('#%06x', hl.fg)
-    end
+    if success and hl then return string.format('#%06x', use_bg and hl.bg or hl.fg) end
     return fallback_color
 end
 
@@ -23,7 +20,7 @@ end
 ---@return table colors
 local function gather_colors()
     local colors = { fg = {}, bg = {} }
-    
+
     -- Get color configuration with fallbacks
     local colors_config = config.get('colors', {
         fg_highlights = {
@@ -38,29 +35,27 @@ local function gather_colors()
         },
         bg_highlights = {
             dark = 'NormalFloat',
-        }
+        },
     })
-    
+
     -- Gather foreground colors
     for color, highlight in pairs(colors_config.fg_highlights) do
-        colors.fg[color] = get_highlight_color(highlight, '#808080')
+        colors.fg[color] = get_highlight_color(highlight, '#808080', false)
     end
-    
+
     -- Gather background colors
     for color, highlight in pairs(colors_config.bg_highlights) do
-        colors.bg[color] = get_highlight_color(highlight, '#000000')
+        colors.bg[color] = get_highlight_color(highlight, '#000000', true)
     end
-    
+
     return colors
 end
 
 ---Setup highlight groups
 ---@param colors table Color values
 local function setup_highlights(colors)
-    local hl = function(name, opts) 
-        vim.api.nvim_set_hl(0, name, opts) 
-    end
-    
+    local hl = function(name, opts) vim.api.nvim_set_hl(0, name, opts) end
+
     -- Basic tabline highlights
     hl('TabLine', { fg = colors.fg.grey, bg = 'none' })
     hl('TabLineFill', { fg = colors.fg.grey, bg = 'none' })
