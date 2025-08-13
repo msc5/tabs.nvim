@@ -10,7 +10,6 @@ A beautiful and informative tabline plugin for Neovim that renders tabs in a vis
 - **Smart Tab Management**: Intelligently displays tab information with proper highlighting
 - **Customizable Sections**: Modular section-based architecture for easy customization
 - **Automatic Color Adaptation**: Adapts to your color scheme automatically
-- **Built-in Keymaps**: Convenient keymaps for tab navigation
 
 ## Installation
 
@@ -25,6 +24,13 @@ Add this to your `init.lua` or plugin configuration:
     config = function()
         require('tabs').setup()
     end,
+    keys = {
+        { 'L', '<cmd>tabnext<cr>' },
+        { 'H', '<cmd>tabprevious<cr>' },
+        { 'Tn', '<cmd>tabnew<cr>' },
+        { 'Tc', '<cmd>tabclose<cr>' },
+        { '<C-w>i', function() require('tabs').breakout() end },
+    },
 }
 ```
 
@@ -57,15 +63,6 @@ Once installed and configured, the plugin will automatically:
 1. Replace the default tabline with a custom one
 2. Display session information, Neovim version, and tabs
 3. Set up convenient keymaps for tab navigation
-
-### Default Keymaps
-
-The plugin provides these keymaps for easy tab navigation:
-
-- `L` - Go to next tab
-- `H` - Go to previous tab  
-- `Tn` - Create new tab
-- `Tc` - Close current tab
 
 ### Built-in Sections
 
