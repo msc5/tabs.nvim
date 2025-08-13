@@ -85,21 +85,48 @@ require('tabs').setup()
 
 ### Custom Configuration
 
-You can customize the tabline by modifying the sections in `lua/tabs/tabline.lua`:
+This plugin supports the following configuration options:
 
 ```lua
--- Example: Modify the default sections
-local tabline = require('tabs.tabline')
-tabline.setup = function()
-    return tabline.Tabline:new {
-        sections = {
-            -- Your custom sections here
-            Section:version { position = 3 },
-            Section:session { position = 20 },
-            Section:tabs { position = 40, justify = 'right' },
+require('tabs').setup({
+    -- Custom section positions
+    sections = {
+        version = { position = 5 },
+        session = { position = 25 },
+        tabs = { position = 50, justify = 'center' },
+    },
+    
+    -- Custom file types to skip
+    skip_filetypes = {
+        ['NvimTree'] = true,
+        ['neo-tree'] = true,
+        ['aerial'] = true,
+        ['help'] = true,
+        ['qf'] = true,
+        ['toggleterm'] = true, -- Additional file type
+    },
+    
+    -- Custom keymaps
+    keymaps = {
+        next = 'L',
+        prev = 'H',
+        new = 'Tn',
+        close = 'Tc',
+    },
+    
+    -- Custom color mappings
+    colors = {
+        fg_highlights = {
+            grey = 'Comment',      -- Use Comment instead of NonText
+            red = 'ErrorMsg',      -- Use ErrorMsg instead of Error
+            orange = 'WarningMsg', -- Use WarningMsg instead of Constant
+            blue = 'Function',     -- Keep Function
         },
+        bg_highlights = {
+            dark = 'Pmenu',        -- Use Pmenu instead of NormalFloat
+        }
     }
-end
+})
 ```
 
 ### Highlight Groups
@@ -141,6 +168,8 @@ You can modify this list in `lua/tabs/manager.lua` in the `skip_filetypes` table
 tabs.nvim/
 ├── lua/tabs/
 │   ├── init.lua      # Main plugin entry point
+│   ├── config.lua    # Configuration system
+│   ├── utils.lua     # Utility functions and error handling
 │   ├── tabline.lua   # Tabline rendering logic
 │   ├── section.lua   # Section definitions and rendering
 │   ├── manager.lua   # Tab management and keymaps
@@ -148,18 +177,25 @@ tabs.nvim/
 │   └── str.lua       # String utility functions
 ├── plugin/
 │   └── tabs.lua      # Plugin loader
+├── tests/            # Test suite
+├── examples/         # Configuration examples
 └── README.md
 ```
 
 ### Debugging
 
-Use the `:TabsInspect` command to debug the tabline rendering:
+Use these commands to debug the tabline:
 
 ```vim
-:TabsInspect
+:TabsSetup    " Manually setup the plugin
+:TabsInspect  " Show debug information about the tabline
 ```
 
-This will print detailed information about the current tabline state.
+If you can't see the tabs, try:
+1. Run `:TabsSetup` to ensure the plugin is properly initialized
+2. Run `:TabsInspect` to see debug information
+3. Check that `showtabline` is set to 1: `:set showtabline?`
+4. Verify the tabline option is set: `:set tabline?`
 
 ### Testing
 

@@ -1,3 +1,5 @@
+local utils = require('tabs.utils')
+
 ---@class Section
 ---@field text? string | function
 ---@field sections? table | function
@@ -21,25 +23,16 @@ function Section:new(o)
 end
 
 function Section:get_text()
-    local success, result = pcall(function() return self.text() end)
-    if success then
-        return result
-    elseif self.text:len() > 0 then
-        return self.text
-    else
+    local result = utils.safe_call(self.text)
+    -- Return nil for empty strings so the tabline falls back to subsections
+    if result == '' then
         return nil
     end
+    return result
 end
 
 function Section:get_sections()
-    local success, result = pcall(function() return self.sections() end)
-    if success then
-        return result
-    elseif next(self.sections) ~= nil then
-        return self.sections
-    else
-        return nil
-    end
+    return utils.safe_call(self.sections)
 end
 
 -- ------------------------- Builtin Section Types -------------------------- --

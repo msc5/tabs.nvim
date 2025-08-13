@@ -4,40 +4,82 @@ local M = {
     highlights = {},
 }
 
+local config = require('tabs.config')
+local utils = require('tabs.utils')
+
+---Get highlight color with fallback
+---@param highlight_name string Highlight group name
+---@param fallback_color string Fallback color if highlight not found
+---@return string
+local function get_highlight_color(highlight_name, fallback_color)
+    local success, hl = pcall(vim.api.nvim_get_hl, 0, { name = highlight_name })
+    if success and hl and hl.fg then
+        return string.format('#%06x', hl.fg)
+    end
+    return fallback_color
+end
+
+---Gather colors from highlight groups
+---@return table colors
+local function gather_colors()
+    local colors = { fg = {}, bg = {} }
+    
+    -- Get color configuration with fallbacks
+    local colors_config = config.get('colors', {
+        fg_highlights = {
+            grey = 'NonText',
+            red = 'Error',
+            purple = 'Statement',
+            orange = 'Constant',
+            blue = 'Function',
+            cyan = 'Character',
+            light_blue = 'Label',
+            pink = 'Macro',
+        },
+        bg_highlights = {
+            dark = 'NormalFloat',
+        }
+    })
+    
+    -- Gather foreground colors
+    for color, highlight in pairs(colors_config.fg_highlights) do
+        colors.fg[color] = get_highlight_color(highlight, '#808080')
+    end
+    
+    -- Gather background colors
+    for color, highlight in pairs(colors_config.bg_highlights) do
+        colors.bg[color] = get_highlight_color(highlight, '#000000')
+    end
+    
+    return colors
+end
+
+---Setup highlight groups
+---@param colors table Color values
+local function setup_highlights(colors)
+    local hl = function(name, opts) 
+        vim.api.nvim_set_hl(0, name, opts) 
+    end
+    
+    -- Basic tabline highlights
+    hl('TabLine', { fg = colors.fg.grey, bg = 'none' })
+    hl('TabLineFill', { fg = colors.fg.grey, bg = 'none' })
+    hl('TabLineSel', { fg = colors.fg.grey, bg = 'none' })
+
+    -- Custom tabline highlights
+    hl('TablineDefault', { fg = colors.fg.grey, bg = 'none' })
+    hl('TablineVersion', { fg = colors.fg.grey, bg = 'none' })
+    hl('TablineSessionIcon', { fg = colors.fg.red, bg = 'none' })
+    hl('TablineSession', { fg = colors.fg.orange, bg = 'none', bold = true })
+    hl('TablineTab', { fg = colors.fg.grey, bg = 'none' })
+    hl('TablineCurrentTab', { fg = colors.fg.blue, bg = colors.bg.dark, bold = true })
+end
+
 local function setup_colors()
-    -- Gather colors based on common configuration
-    local fg_highlights = {
-        grey = 'NonText',
-        red = 'Error',
-        purple = 'Statement',
-        orange = 'Constant',
-        blue = 'Function',
-        cyan = 'Character',
-        light_blue = 'Label',
-        pink = 'Macro',
-    }
-    for color, highlight in pairs(fg_highlights) do
-        M.fg[color] = vim.api.nvim_get_hl(0, { name = highlight }).fg
-    end
-
-    local bg_highlights = {
-        dark = 'NormalFloat',
-    }
-    for color, highlight in pairs(bg_highlights) do
-        M.bg[color] = vim.api.nvim_get_hl(0, { name = highlight }).bg
-    end
-
-    local hl = function(name, opts) vim.api.nvim_set_hl(0, name, opts) end
-    hl('TabLine', { fg = M.fg.grey, bg = 'none' })
-    hl('TabLineFill', { fg = M.fg.grey, bg = 'none' })
-    hl('TabLineSel', { fg = M.fg.grey, bg = 'none' })
-
-    hl('TablineDefault', { fg = M.fg.grey, bg = 'none' })
-    hl('TablineVersion', { fg = M.fg.grey, bg = 'none' })
-    hl('TablineSessionIcon', { fg = M.fg.red, bg = 'none' })
-    hl('TablineSession', { fg = M.fg.orange, bg = 'none', bold = true })
-    hl('TablineTab', { fg = M.fg.grey, bg = 'none' })
-    hl('TablineCurrentTab', { fg = M.fg.blue, bg = M.bg.dark, bold = true })
+    local colors = gather_colors()
+    M.fg = colors.fg
+    M.bg = colors.bg
+    setup_highlights(colors)
 end
 
 function M.setup()

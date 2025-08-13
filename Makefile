@@ -12,6 +12,8 @@ help:
 test:
 	@echo "Running tests..."
 	@nvim --headless -c "lua dofile('tests/simple_test.lua')"
+	@echo "Running basic functionality test..."
+	@nvim --headless -c "lua dofile('tests/test_basic_functionality.lua')"
 
 # Check Lua syntax
 lint:

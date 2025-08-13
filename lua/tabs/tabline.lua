@@ -1,5 +1,7 @@
 local Section = require 'tabs.section'
 local str = require 'tabs.str'
+local utils = require 'tabs.utils'
+local config = require 'tabs.config'
 local utf8 = require 'utf8'
 
 ---@class Tabline
@@ -24,29 +26,13 @@ end
 ---@param text string
 ---@param position integer
 function Tabline:replace(text, position)
-    --
-    -- Example:
-    -- text = 'example'
-    -- replace('|', 3)
-    -- text = 'ex|mple'
-    --
-    local sub_stop = utf8.offset(self.text, position - 1)
-    local sub_start = utf8.offset(self.text, position + text:len())
-    self.text = self.text:sub(0, sub_stop) .. text .. self.text:sub(sub_start)
+    self.text = utils.replace_text_at_position(self.text, text, position, text:len())
 end
 
 ---@param text string
 ---@param position integer
 function Tabline:insert(text, position)
-    --
-    -- Example:
-    -- text = 'example'
-    -- insert('|', 3)
-    -- text = 'ex|ample'
-    --
-    local sub_stop = utf8.offset(self.text, position - 1)
-    local sub_start = utf8.offset(self.text, position)
-    self.text = self.text:sub(0, sub_stop) .. text .. self.text:sub(sub_start)
+    self.text = utils.insert_text_at_position(self.text, text, position)
 end
 
 ---@param position? integer
@@ -83,32 +69,21 @@ function Tabline:generate(position, verbose, sections)
 end
 
 function Tabline:highlight()
-    --
     local highlights = {}
-
-    --
-    table.sort(self.highlights, function(a, b) return a.start > b.start end)
+    
+    -- Process all highlights in one pass
     for _, highlight in pairs(self.highlights) do
-        table.insert(highlights, {
-            pos = highlight.start,
-            text = '%#' .. highlight.group .. '#',
-        })
+        table.insert(highlights, { pos = highlight.start, text = '%#' .. highlight.group .. '#' })
+        table.insert(highlights, { pos = highlight.stop, text = '%#TablineDefault#' })
     end
-    table.sort(self.highlights, function(a, b) return a.stop > b.stop end)
-    for _, highlight in pairs(self.highlights) do
-        table.insert(highlights, {
-            pos = highlight.stop,
-            text = '%#TablineDefault#',
-        })
-    end
-
-    --
+    
+    -- Single sort operation
     table.sort(highlights, function(a, b) return a.pos > b.pos end)
+    
     for _, highlight in pairs(highlights) do
         self:insert(highlight.text, highlight.pos)
     end
-
-    --
+    
     self.text = '%#TablineDefault#' .. self.text
 end
 
@@ -122,20 +97,39 @@ end
 
 vim.api.nvim_create_user_command('TabsInspect', function()
     local tabline = require('tabs').tabline
+    if not tabline then
+        print("❌ Tabline not initialized. Run :TabsSetup first.")
+        return
+    end
+    
     tabline:render()
-    print(vim.o.columns)
-    print(vim.fn.strdisplaywidth(tabline.text))
-    print('|' .. tabline.text .. '|')
-    print(vim.inspect(tabline))
+    print("📊 Tabline Debug Information:")
+    print("Columns: " .. vim.o.columns)
+    print("Text length: " .. vim.fn.strdisplaywidth(tabline.text))
+    print("Raw text: |" .. tabline.text .. "|")
+    print("Sections count: " .. #tabline.sections)
+    print("Highlights count: " .. #tabline.highlights)
+end, {})
+
+vim.api.nvim_create_user_command('TabsSetup', function()
+    require('tabs').setup()
+    print("✅ Tabs.nvim setup complete")
 end, {})
 
 return {
     setup = function()
+        -- Get configuration with fallback to defaults
+        local sections_config = config.get('sections', {
+            version = { position = 3 },
+            session = { position = 20 },
+            tabs = { position = 40, justify = 'right' },
+        })
+        
         return Tabline:new {
             sections = {
-                Section:version { position = 3 },
-                Section:session { position = 20 },
-                Section:tabs { position = 40, justify = 'right' },
+                Section:version { position = sections_config.version.position },
+                Section:session { position = sections_config.session.position },
+                Section:tabs { position = sections_config.tabs.position, justify = sections_config.tabs.justify },
             },
         }
     end,

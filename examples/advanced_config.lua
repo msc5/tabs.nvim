@@ -1,11 +1,10 @@
 -- Advanced configuration example for tabs.nvim
--- This shows how you could customize the plugin (when configuration options are added)
+-- This shows how to customize the plugin with the new configuration system
 
 return {
     'your-username/tabs.nvim',
     event = 'VimEnter',
     config = function()
-        -- Example of future configuration options
         require('tabs').setup({
             -- Custom section positions
             sections = {
@@ -32,10 +31,17 @@ return {
                 close = 'Tc',
             },
             
-            -- Custom colors
+            -- Custom color mappings
             colors = {
-                current_tab = { fg = '#ff6b6b', bg = '#2d3748', bold = true },
-                session = { fg = '#fbbf24', bg = 'none', bold = true },
+                fg_highlights = {
+                    grey = 'Comment',      -- Use Comment instead of NonText
+                    red = 'ErrorMsg',      -- Use ErrorMsg instead of Error
+                    orange = 'WarningMsg', -- Use WarningMsg instead of Constant
+                    blue = 'Function',     -- Keep Function
+                },
+                bg_highlights = {
+                    dark = 'Pmenu',        -- Use Pmenu instead of NormalFloat
+                }
             }
         })
     end,
