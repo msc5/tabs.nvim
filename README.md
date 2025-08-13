@@ -161,6 +161,24 @@ Use the `:TabsInspect` command to debug the tabline rendering:
 
 This will print detailed information about the current tabline state.
 
+### Testing
+
+The plugin includes a comprehensive test suite. To run tests locally:
+
+```bash
+# Run basic tests (no external dependencies)
+make test
+
+# Check Lua syntax
+make lint
+
+# Install development dependencies and run full test suite
+make install
+make test-full
+```
+
+For more information about testing, see the `tests/` directory and `Makefile`.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues and pull requests.

@@ -13,17 +13,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Lua
-        uses: leafo/gh-actions-lua@v9
-        with:
-          luaVersion: "5.1"
+      - name: Install Neovim
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y neovim lua5.1
+
+      - name: Debug environment
+        run: |
+          echo "Neovim version:"
+          nvim --version
+          echo "Lua version:"
+          lua -v
+          echo "Available Lua files:"
+          find . -name "*.lua" | head -10
 
       - name: Run tests
         run: |
-          nvim --headless -c "lua dofile('tests/simple_test.lua')"
+          echo "Running tests..."
+          nvim --headless -c "lua dofile('tests/simple_test.lua')" || {
+            echo "Test failed, trying with verbose output..."
+            nvim --headless -c "lua dofile('tests/simple_test.lua')" --verbose
+            exit 1
+          }
 
       - name: Check for syntax errors
         run: |
-          # Check Lua syntax for all Lua files
+          echo "Checking Lua syntax..."
           find lua -name "*.lua" -exec luac -p {} \;
           find tests -name "*.lua" -exec luac -p {} \;
+          echo "✓ All Lua files have valid syntax"
