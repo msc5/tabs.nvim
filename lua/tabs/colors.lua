@@ -67,7 +67,7 @@ local function setup_highlights(colors)
     hl('TablineSessionIcon', { fg = colors.fg.red, bg = 'none' })
     hl('TablineSession', { fg = colors.fg.orange, bg = 'none', bold = true })
     hl('TablineTab', { fg = colors.fg.grey, bg = 'none' })
-    hl('TablineCurrentTab', { fg = colors.fg.blue, bg = colors.bg.dark, bold = true })
+    hl('TablineCurrentTab', { fg = colors.fg.blue, bg = 'none', bold = true })
 end
 
 local function setup_colors()
