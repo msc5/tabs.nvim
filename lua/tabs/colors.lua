@@ -22,7 +22,7 @@ local function gather_colors()
     local colors = { fg = {}, bg = {} }
 
     -- Get color configuration with fallbacks
-    local colors_config = config.get('colors', {
+    local colors_config = {
         fg_highlights = {
             grey = 'NonText',
             red = 'Error',
@@ -34,9 +34,9 @@ local function gather_colors()
             pink = 'Macro',
         },
         bg_highlights = {
-            dark = 'Pmenu',
+            dark = 'Folded',
         },
-    })
+    }
 
     -- Gather foreground colors
     for color, highlight in pairs(colors_config.fg_highlights) do
