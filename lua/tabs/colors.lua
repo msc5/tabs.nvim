@@ -22,7 +22,7 @@ local function gather_colors()
     local colors = { fg = {}, bg = {} }
 
     -- Get color configuration with fallbacks
-    local colors_config = config.get('colors', {
+    local colors_config = {
         fg_highlights = {
             grey = 'NonText',
             red = 'Error',
@@ -32,11 +32,12 @@ local function gather_colors()
             cyan = 'Character',
             light_blue = 'Label',
             pink = 'Macro',
+            yellow = 'WarningMsg',
         },
         bg_highlights = {
-            dark = 'NormalFloat',
+            dark = 'Folded',
         },
-    })
+    }
 
     -- Gather foreground colors
     for color, highlight in pairs(colors_config.fg_highlights) do
@@ -68,6 +69,7 @@ local function setup_highlights(colors)
     hl('TablineSession', { fg = colors.fg.orange, bg = 'none', bold = true })
     hl('TablineTab', { fg = colors.fg.grey, bg = 'none' })
     hl('TablineCurrentTab', { fg = colors.fg.blue, bg = colors.bg.dark, bold = true })
+    hl('TablineTabCounter', { fg = colors.fg.yellow, bg = 'none', bold = true })
 end
 
 local function setup_colors()
