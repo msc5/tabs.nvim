@@ -32,6 +32,7 @@ local function gather_colors()
             cyan = 'Character',
             light_blue = 'Label',
             pink = 'Macro',
+            yellow = 'WarningMsg',
         },
         bg_highlights = {
             dark = 'Folded',
@@ -68,6 +69,7 @@ local function setup_highlights(colors)
     hl('TablineSession', { fg = colors.fg.orange, bg = 'none', bold = true })
     hl('TablineTab', { fg = colors.fg.grey, bg = 'none' })
     hl('TablineCurrentTab', { fg = colors.fg.blue, bg = colors.bg.dark, bold = true })
+    hl('TablineTabCounter', { fg = colors.fg.yellow, bg = 'none', bold = true })
 end
 
 local function setup_colors()
